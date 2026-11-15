@@ -129,6 +129,25 @@
     .brand { font-size: 26px; font-weight: 700; margin-right: auto; }
     .invite { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 4px 4px 4px 12px; }
     .invite code { font-family: inherit; font-weight: 600; letter-spacing: 3px; font-size: 18px; }
+    /* After Copy code in the toolbar: the QR button, and the code it opens just above the toolbar. */
+    .small-btn.qr-btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; }
+    .small-btn.qr-btn[aria-expanded="true"] { background: #43b896; box-shadow: 0 0 0 2px rgba(55, 160, 130, 0.45); }
+    #booth-qr {
+      position: fixed; left: 0; right: 0; bottom: 68px; z-index: 45; display: flex; justify-content: flex-end;
+      padding: 0 max(16px, calc((100vw - 1280px) / 2)); pointer-events: none;
+    }
+    .qr-pop-card {
+      position: relative; pointer-events: auto; background: var(--panel); border: 1px solid var(--line);
+      border-radius: 16px; padding: 14px 14px 12px; text-align: center; box-shadow: 0 18px 46px rgba(0, 0, 0, 0.55);
+    }
+    /* White around the code: the quiet zone a phone camera needs to find it. */
+    .qr-pop-frame { width: 188px; padding: 6px; margin: 0 auto; background: #fff; border-radius: 10px; line-height: 0; }
+    .qr-pop-frame svg { display: block; width: 100%; height: auto; }
+    .qr-pop-label { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
+    .qr-pop-link { color: var(--green); font-size: 13px; word-break: break-all; }
+    .qr-pop-link:hover { color: var(--text); }
+    /* A short window (a small laptop, a phone in landscape) gets a smaller code, still scannable. */
+    @media (max-height: 560px) { .qr-pop-frame { width: 132px; padding: 5px; } .qr-pop-label { font-size: 13px; } .qr-pop-link { display: none; } }
     .small-btn { padding: 7px 12px; border-radius: 9px; border: none; background: var(--green); color: #fff; font-weight: 600; font-size: 15px; }
     .small-btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); }
     .small-btn:hover { filter: brightness(1.08); }
@@ -294,9 +313,23 @@
       <div class="invite" id="invite">
         <code id="room-code-txt">----</code>
         <button class="small-btn" id="copy-btn">Copy code</button>
+        <!-- The same invite as a QR code, for phones. The toolbar is only 44px tall, so the code itself
+             opens above it at a size a camera can actually read. -->
+        <button class="small-btn qr-btn" id="qr-btn" aria-expanded="false" aria-controls="booth-qr" title="Show the QR code to scan on your phone">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><g fill="currentColor"><path d="M3 3h7v7H3z"/><path d="M14 3h7v7h-7z"/><path d="M3 14h7v7H3z"/><path d="M14 14h3v3h-3z"/><path d="M18 18h3v3h-3z"/><path d="M14 19h2v2h-2z"/><path d="M19 14h2v2h-2z"/></g></svg>QR
+        </button>
       </div>
       <button class="photos-btn" id="photos-btn" hidden>Your film roll <span id="photos-count">0</span></button>
       <button id="shutter"><span class="lens" aria-hidden="true"></span>Take photo</button>
+      </div>
+    </div>
+
+    <div id="booth-qr" hidden>
+      <div class="qr-pop-card" role="dialog" aria-label="QR code for this booth">
+        <button class="modal-x" id="close-booth-qr" aria-label="Close">&times;</button>
+        <div class="qr-pop-frame" id="booth-qr-code" aria-hidden="true"></div>
+        <p class="qr-pop-label">Scan to join on your phone</p>
+        <a class="qr-pop-link" id="booth-join-link" href="#" target="_blank" rel="noopener">Open the link</a>
       </div>
     </div>
 

@@ -531,6 +531,7 @@ function showView() {
   document.body.classList.toggle('in-booth', state.inBooth && state.open);
   if (!state.open) {
     $('gallery').hidden = true;
+    setQrOpen(false);
   }
 }
 
@@ -585,18 +586,37 @@ function basePath() {
   return location.pathname.replace(/[^/]*$/, '');
 }
 
-// The booth's own link (…/?room=code), for the QR code under Copy code: a phone scans it and the booth
-// opens there, in the same room. It's rebuilt only when the room changes, so nobody's phone is left
-// looking at a code for a room they've already left.
-let qrRoom = '';
+// The booth's own link (…/?room=code), for the QR codes: a phone scans one and the booth opens there, in
+// the same room. Codes are rebuilt only when the room changes, so nobody's phone is left looking at a
+// code for a room they've already left.
+let qrRoom = ''; // the link both codes currently show
+// Draw the code into a frame, and point its link at the same place. The two places it appears: the
+// lobby (always on show, under Copy code) and the booth toolbar (behind a button).
+function drawQr(frame, link, url, code) {
+  $(frame).innerHTML = Invite.qrSvg(url, `QR code for the booth link, room ${code}`);
+  $(link).href = url;
+  $(link).textContent = url.replace(/^https?:\/\//, '');
+}
+// Called on every lobby update: keeps both codes on the current room.
 function showInviteQr(code) {
   const url = Invite.inviteUrl(location.origin + basePath(), code);
   $('lobby-qr').hidden = !url;
+  $('qr-btn').disabled = !url;
+  if (!url) setQrOpen(false);
   if (!url || url === qrRoom) return;
   qrRoom = url;
-  $('lobby-qr-code').innerHTML = Invite.qrSvg(url, `QR code for the booth link, room ${code}`);
-  $('lobby-join-link').href = url;
-  $('lobby-join-link').textContent = url.replace(/^https?:\/\//, '');
+  drawQr('lobby-qr-code', 'lobby-join-link', url, code);
+  drawQr('booth-qr-code', 'booth-join-link', url, code);
+}
+
+// In the booth the room code is already there, so the QR code waits behind a button: the toolbar is only
+// 44px tall, far too short for a code a phone camera could read, so the code opens above it instead.
+function setQrOpen(open) {
+  $('booth-qr').hidden = !open || !state.roomCode;
+  const showing = !$('booth-qr').hidden;
+  $('qr-btn').setAttribute('aria-expanded', String(showing));
+  $('qr-btn').title = showing ? 'Hide the QR code' : 'Show the QR code to scan on your phone';
+  if (showing) $('close-booth-qr').focus();
 }
 
 function buildScenePicker() {
@@ -661,6 +681,7 @@ function enterBooth() {
 function leaveBooth() {
   state.inBooth = false;
   state.players = [];
+  setQrOpen(false);
   calls.forEach((c) => closeCall(c));
   calls.clear();
   $('result').hidden = true;
@@ -733,6 +754,18 @@ $('lobby-copy-btn').addEventListener('click', () => {
   $('copy-btn').click();
   $('lobby-copy-btn').textContent = 'Copied!';
   setTimeout(() => { $('lobby-copy-btn').textContent = 'Copy code'; }, 1500);
+});
+// The QR code in the booth toolbar: opens above the toolbar, closes on the X, Escape or a click elsewhere.
+$('qr-btn').addEventListener('click', () => setQrOpen($('booth-qr').hidden));
+$('close-booth-qr').addEventListener('click', () => { setQrOpen(false); $('qr-btn').focus(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || $('booth-qr').hidden) return;
+  setQrOpen(false);
+  $('qr-btn').focus();
+});
+document.addEventListener('pointerdown', (e) => {
+  if ($('booth-qr').hidden || $('booth-qr').contains(e.target) || $('qr-btn').contains(e.target)) return;
+  setQrOpen(false);
 });
 
 socket.on('lobbyUpdate', applyLobby);
