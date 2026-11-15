@@ -706,6 +706,13 @@ $('copy-btn').addEventListener('click', async () => {
   $('copy-btn').textContent = 'Copied!';
   setTimeout(() => { $('copy-btn').textContent = 'Copy code'; }, 1500);
 });
+// Leave the room for the home screen (create a booth or join one with a code).
+$('lobby-home-btn').addEventListener('click', () => {
+  socket.emit('leaveRoom');
+  state.linkRoom = false;
+  leaveBooth();
+  showError('');
+});
 $('lobby-copy-btn').addEventListener('click', () => {
   $('copy-btn').click();
   $('lobby-copy-btn').textContent = 'Copied!';

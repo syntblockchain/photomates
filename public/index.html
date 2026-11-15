@@ -101,6 +101,7 @@
     .more-mates { margin: -4px 0 12px; color: var(--muted); }
     #lobby-card #open-btn { max-width: 340px; margin: 6px auto 14px; }
     .lobby-invite { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 4px 4px 4px 12px; }
+    #lobby-home-btn { width: auto; display: block; margin: 12px auto 0; padding: 8px 18px; font-size: 16px; }
     .lobby-invite code { font-family: var(--display); font-weight: 600; letter-spacing: 3px; font-size: 18px; }
     @media (max-width: 700px) { .slots { grid-template-columns: repeat(3, 1fr); } }
     .chip.home-btn { display: grid; place-items: center; padding: 10px 14px; }
@@ -235,6 +236,7 @@
         <code id="lobby-code">----</code>
         <button class="small-btn" id="lobby-copy-btn">Copy code</button>
       </div>
+      <button class="btn ghost" id="lobby-home-btn">Back to home</button>
     </div>
     <p class="hint" id="connecting-hint" hidden>Connecting...</p>
     <p class="error" id="error-msg" role="alert"></p>
