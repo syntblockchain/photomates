@@ -2,6 +2,7 @@
 // everyone in the booth, the live scene, the shutter and the finished photo.
 const socket = window.PhotomatesNet.createNet();
 const Scenes = window.PhotomatesScenes;
+const Invite = window.PhotomatesInvite;
 const DEBUG = /[?&]debug\b/.test(location.search);
 const inFrame = (() => { try { return window.self !== window.top; } catch { return true; } })();
 
@@ -584,6 +585,20 @@ function basePath() {
   return location.pathname.replace(/[^/]*$/, '');
 }
 
+// The booth's own link (…/?room=code), for the QR code under Copy code: a phone scans it and the booth
+// opens there, in the same room. It's rebuilt only when the room changes, so nobody's phone is left
+// looking at a code for a room they've already left.
+let qrRoom = '';
+function showInviteQr(code) {
+  const url = Invite.inviteUrl(location.origin + basePath(), code);
+  $('lobby-qr').hidden = !url;
+  if (!url || url === qrRoom) return;
+  qrRoom = url;
+  $('lobby-qr-code').innerHTML = Invite.qrSvg(url, `QR code for the booth link, room ${code}`);
+  $('lobby-join-link').href = url;
+  $('lobby-join-link').textContent = url.replace(/^https?:\/\//, '');
+}
+
 function buildScenePicker() {
   const select = $('scene-select');
   select.replaceChildren(...Scenes.SCENES.map((s) => {
@@ -615,6 +630,7 @@ function applyLobby(payload) {
   state.open = !!payload.started;
   $('room-code-txt').textContent = payload.roomCode;
   $('lobby-code').textContent = payload.roomCode;
+  showInviteQr(payload.roomCode);
   [...$('scene-select').options].forEach((o) => {
     // Scenes with only so many spots take turns when there are more mates than that.
     const cap = Scenes.byId(o.value).capacity;
