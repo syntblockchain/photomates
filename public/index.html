@@ -103,7 +103,22 @@
     .lobby-invite { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 4px 4px 4px 12px; }
     #lobby-home-btn { width: auto; display: block; margin: 12px auto 0; padding: 8px 18px; font-size: 16px; }
     .lobby-invite code { font-family: var(--display); font-weight: 600; letter-spacing: 3px; font-size: 18px; }
-    @media (max-width: 700px) { .slots { grid-template-columns: repeat(3, 1fr); } }
+    /* Under Copy code: the same invite as a QR code, for phones. The frame stays white around the code
+       (the quiet zone a camera needs) even though the page is dark. */
+    .lobby-qr { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 16px auto 0; }
+    .lobby-qr-frame { width: 168px; padding: 6px; background: #fff; border-radius: 10px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35); line-height: 0; }
+    .lobby-qr-frame svg { display: block; width: 100%; height: auto; }
+    .lobby-qr-label { margin: 2px 0 0; color: var(--muted); font-size: 15px; }
+    .lobby-qr-link { color: var(--green); font-size: 14px; word-break: break-all; }
+    .lobby-qr-link:hover { color: var(--text); }
+    @media (max-width: 700px) { .slots { grid-template-columns: repeat(3, 1fr); } .lobby-qr-frame { width: 152px; } }
+    /* A phone in landscape (the common case while a mate scans this code) has little height to spare. */
+    @media (max-height: 520px) {
+      .lobby-qr { margin-top: 12px; }
+      .lobby-qr-frame { width: 124px; padding: 5px; }
+      .lobby-qr-label { font-size: 14px; }
+      .lobby-qr-link { display: none; }
+    }
     .chip.home-btn { display: grid; place-items: center; padding: 10px 14px; }
 
     /* ---------- Booth ---------- */
@@ -236,6 +251,12 @@
         <code id="lobby-code">----</code>
         <button class="small-btn" id="lobby-copy-btn">Copy code</button>
       </div>
+      <!-- Scan this to bring the booth up on a phone: the QR code is the booth's own link, room code and all. -->
+      <div class="lobby-qr" id="lobby-qr">
+        <div class="lobby-qr-frame" id="lobby-qr-code" aria-hidden="true"></div>
+        <p class="lobby-qr-label">Scan to join on your phone</p>
+        <a class="lobby-qr-link" id="lobby-join-link" href="#" target="_blank" rel="noopener">Open the link</a>
+      </div>
       <button class="btn ghost" id="lobby-home-btn">Back to home</button>
     </div>
     <p class="hint" id="connecting-hint" hidden>Connecting...</p>
@@ -312,6 +333,8 @@
 
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script src="config.js?v=__BUILD__"></script>
+  <script src="qrcode.js?v=__BUILD__"></script>
+  <script src="invite.js?v=__BUILD__"></script>
   <script src="engine.js?v=__BUILD__"></script>
   <script src="scenes.js?v=__BUILD__"></script>
   <script src="net.js?v=__BUILD__"></script>
